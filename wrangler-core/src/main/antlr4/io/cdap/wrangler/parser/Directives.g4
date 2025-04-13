@@ -64,6 +64,8 @@ directive
     | stringList
     | numberRanges
     | properties
+    | byteSizeArg          // <-- NEW
+    | timeDurationArg      // <-- NEW
   )*?
   ;
 
@@ -140,7 +142,12 @@ numberRange
  ;
 
 value
- : String | Number | Column | Bool
+ : String
+ | Number
+ | Column
+ | Bool
+ | BYTE_SIZE         // <-- NEW
+ | TIME_DURATION     // <-- NEW
  ;
 
 ecommand
@@ -195,6 +202,14 @@ identifierList
  : Identifier (',' Identifier)*
  ;
 
+// NEW: Parser rules for specific argument types
+byteSizeArg
+ : BYTE_SIZE
+ ;
+
+timeDurationArg
+ : TIME_DURATION
+ ;
 
 /*
  * Following are the Lexer Rules used for tokenizing the recipe.
@@ -293,7 +308,7 @@ UnicodeEscape
    ;
 
 fragment
-   HexDigit : ('0'..'9'|'a'..'f'|'A'..'F') ;
+HexDigit : ('0'..'9'|'a'..'f'|'A'..'F') ;
 
 Comment
  : ('//' ~[\r\n]* | '/*' .*? '*/' | '--' ~[\r\n]* ) -> skip
@@ -311,3 +326,26 @@ fragment Int
 fragment Digit
  : [0-9]
  ;
+
+//  NEW BYTE_SIZE and TIME_DURATION tokens
+BYTE_SIZE
+  : Number BYTE_UNIT
+  ;
+
+TIME_DURATION
+  : Number TIME_UNIT
+  ;
+
+fragment BYTE_UNIT
+  : [kK][bB]?    // KB
+  | [mM][bB]?    // MB
+  | [gG][bB]?    // GB
+  | [tT][bB]?    // TB
+  ;
+
+fragment TIME_UNIT
+  : [sS]         // seconds
+  | [mM][sS]?    // ms or minutes
+  | [hH]         // hours
+  | [dD]         // days
+  ;
